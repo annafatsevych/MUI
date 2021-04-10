@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Basic MUI</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="minimum-scale=1,initial-scale=1,width=device-width" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="https://unpkg.com/react/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@material-ui/core/umd/material-ui.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+    <script type="text/babel">
+    
+      const theme = MaterialUI.createMuiTheme({
+        typography: {
+          fontFamily: "Roboto",
+        },
+  
+      })
+
+      const { 
+        ThemeProvider, 
+        CssBaseline, 
+        Container, 
+        Typography, 
+        AppBar, 
+        Icon, 
+        Button, 
+        Toolbar, 
+        Drawer, 
+        Grid, 
+        Box, 
+        TextField, 
+        CircularProgress,
+        Card,
+        CardContent,
+        CardMedia,
+        CardActions,
+      } = MaterialUI
+
+      const renderBlogPost = (posts = [], photos = []) => {
+        const info = photos.items.map(item => item.volumeInfo).filter(item => typeof item ==='object');
+        return posts.map((post, index) => 
+          (index < 9 ?
+          <Card  variant="outlined">
+            <CardContent>
+              <Grid container justify="space-between">
+                <CardMedia style={{height: "170px", flex: " 0 0 190px"}}
+                  image={info[index].imageLinks ? info[index].imageLinks.thumbnail : "http://books.google.com/books/content?id=t10TAAAAYAAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"}
+                  title="Contemplative Reptile"
+                />
+                <Grid style={{flex: "1 1 0", textAlign: "right"}}>
+                  <Typography  variant="h4">{post.title}</Typography>
+                  <Typography>{post.body}</Typography>
+                </Grid>
+              </Grid>
+              <CardActions>
+                <Button size="small" color="primary" href="https://twitter.com/intent/tweet?text=The sharing on twitter" data-size="large" target="_blank">
+                  Share
+                </Button>
+                <Button size="small" color="primary" href={info[index].infoLink} target="_blank">
+                  Learn More
+                </Button>
+              </CardActions>
+            </CardContent>
+          </Card> 
+          : null))       
+      }
+
+      const App = () => {
+
+        const [drawer, setDrawer] = React.useState(false)
+        const [token, setToken] = React.useState("")
+
+        const [loading, setLoading] = React.useState(false)
+        const [projects, setProjects] = React.useState()
+        const [photos, setPhotos] = React.useState()
+
+
+        const handleClick = () => {
+          fetchPhotos()
+          fetchProjects()
+        }
+
+        const fetchProjects = () => {
+          setProjects(null)
+          setLoading(true)
+          return fetch(
+            "https://jsonplaceholder.typicode.com/posts", {
+
+          })
+          .then(response => response.ok
+            ? response.json()
+            : Promise.reject(response)
+          )
+          .then(projects =>
+            setProjects(projects)
+          )
+          .catch(e =>
+            setProjects(null)
+          )
+          .finally(() =>
+            setLoading(false)
+          )
+        }
+
+        const fetchPhotos = () => {
+          setPhotos(null)
+          setLoading(true)
+          return fetch(
+            "https://www.googleapis.com/books/v1/volumes?q=flowers",
+            // "https://jsonplaceholder.typicode.com/photos", 
+            {})
+          .then(response => response.ok
+            ? response.json()
+            : Promise.reject(response)
+          )
+          .then(photos =>
+            setPhotos(photos)
+          )
+          .catch(e =>
+            setPhotos(null)
+          )
+          .finally(() =>
+            setLoading(false)
+          )
+        }
+
+        return <React.Fragment>
+          <AppBar position="static">
+            <Toolbar>
+              <Icon onClick={e => setDrawer(true)}>menu</Icon>
+            </Toolbar>
+          </AppBar>
+          <Container component="main">
+            <Grid container justify="center">
+              <Grid item xs={6}>
+                <Box p={10}>
+                  <Button
+                    size="large" color="primary" variant="outlined"
+                    onClick={e => handleClick()} disabled={loading}
+                  >
+                    Fetch Blog Posts
+                  </Button>
+                </Box>
+              </Grid>
+              <Grid item xs={8}>
+                {loading &&
+                  <CircularProgress size={100} />
+                }
+                {projects && photos &&
+                  <Typography>
+                    {renderBlogPost(projects, photos)}
+                  </Typography>
+                }
+              </Grid>
+            </Grid>
+          </Container>
+        </React.Fragment>
+      }
+
+      ReactDOM.render(
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <App />
+        </ThemeProvider>,
+        document.getElementById("app")
+      )
+
+    </script>
